@@ -12,8 +12,16 @@ import CoreServices
 func main() {
   let args = [String](Process.arguments)
 
-  if args.count > 1 {
-    var word : String = args[1]
+  if args.count < 2 {
+    println("\n".join([
+      "",
+      "Usage:",
+      "    \(args[0]) word",
+      "    \(args[0]) foo bar",
+      "",
+      ]))
+  } else {
+    var word = " ".join(args[1...(args.count - 1)])
     var range : CFRange =  CFRangeMake(0, (word as NSString).length)
     var result : String? = DCSCopyTextDefinition(nil, word, range)?.takeRetainedValue()
     if result == nil {
