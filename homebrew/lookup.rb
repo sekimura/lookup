@@ -11,6 +11,6 @@ class Lookup < Formula
 
   def install
     system "install", "lookup", "#{prefix}/lookup"
-    system "ln", "-s", "#{prefix}/lookup", "/usr/local/bin/lookup"
+    system "ln", "-sf", "#{prefix}/lookup", "/usr/local/bin/lookup"
   end
 end
