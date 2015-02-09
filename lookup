@@ -14,16 +14,19 @@ func main() {
       "    \(args[0]) foo bar",
       "",
       ]))
-  } else {
-    var word = " ".join(args[1...(args.count - 1)])
-    var range : CFRange = CFRangeMake(0, (word as NSString).length)
-    var result : String? = DCSCopyTextDefinition(nil, word, range)?.takeRetainedValue()
-    if result == nil {
-      println("No entries found")
       return
-    }
-    println(result!)
   }
+
+  var word = " ".join(args[1...(args.count - 1)])
+  var range : CFRange = CFRangeMake(0, (word as NSString).length)
+
+  var result : String? = DCSCopyTextDefinition(nil, word, range)?.takeRetainedValue()
+  if result == nil {
+    println("No entries found")
+    return
+  }
+
+  println(result!)
 
 }
 
