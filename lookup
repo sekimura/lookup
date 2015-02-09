@@ -14,7 +14,7 @@ func main() {
       "    \(args[0]) foo bar",
       "",
       ]))
-      return
+    return
   }
 
   var word = " ".join(args[1...(args.count - 1)])
