@@ -11,7 +11,7 @@ import CoreServices
 
 func main() {
   let args = [String](Process.arguments)
-  
+
   if args.count > 1 {
     var word : String = args[1]
     var range : CFRange =  CFRangeMake(0, (word as NSString).length)
@@ -22,6 +22,7 @@ func main() {
     }
     println(result!)
   }
+
 }
 
 main()
