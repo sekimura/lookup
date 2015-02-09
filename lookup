@@ -10,8 +10,8 @@ func main() {
     println("\n".join([
       "",
       "Usage:",
-      "    \(args[0]) word",
-      "    \(args[0]) foo bar",
+      "    \(args[0]) lackadaisical",
+      "    \(args[0]) lazy susan",
       "",
       ]))
     return
