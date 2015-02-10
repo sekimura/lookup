@@ -4,7 +4,7 @@
 import Foundation
 import CoreServices
 
-func suggestion(query : String) -> String? {
+func query_suggestion(query : String) -> String? {
     let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
     let url = NSURL(string: "https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
     let req = NSURLRequest(URL: url)
@@ -25,7 +25,7 @@ func suggestion(query : String) -> String? {
     }
 }
 
-func definition(textString : String) -> String? {
+func get_definition(textString : String) -> String? {
   var range : CFRange = CFRangeMake(0, countElements(textString))
   return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
 }
@@ -46,25 +46,25 @@ func main() {
 
   var word = " ".join(args[1...(args.count - 1)])
 
-  var result : String? = definition(word)
-  if result == nil {
-    var hint : String? = suggestion(word)
-    if hint == nil {
-        println("No entries found")
-    } else {
-        result = definition(hint!)
-        if result == nil {
-            println("No entries found")
-        } else {
-            println("Did you mean: \(hint!)")
-            println(result!)
-        }
-    }
+  var result : String? = get_definition(word)
+  if result != nil {
+    println(result!)
     return
   }
 
-  println(result!)
+  var suggestion : String? = query_suggestion(word)
+  if suggestion == nil {
+    println("No entries found")
+    return
+  }
+  result = get_definition(suggestion!)
+  if result == nil {
+    println("No entries found")
+    return
+  }
 
+  println("Did you mean: \(suggestion!)")
+  println(result!)
 }
 
 main()
