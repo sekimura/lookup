@@ -24,7 +24,7 @@ func query_suggestion(query : String) -> String? {
     if (json.count > 2) {
       let idx = json.count - 1
       let dict = json[idx] as NSDictionary
-      var hint = dict.objectForKey("o") as String?
+      var hint: String? = dict.objectForKey("o") as String?
       if hint == nil {
           return nil
       }
@@ -57,13 +57,13 @@ func main() {
 
   var word = " ".join(args[1...(args.count - 1)])
 
-  var result : String? = get_definition(word)
+  var result: String? = get_definition(word)
   if result != nil {
     println(result!)
     return
   }
 
-  var suggestion : String? = query_suggestion(word)
+  var suggestion: String? = query_suggestion(word)
   if suggestion == nil {
     println("No entries found")
     return
