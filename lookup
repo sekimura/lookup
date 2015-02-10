@@ -1,7 +1,34 @@
-#!/usr/bin/xcrun swift
+#!/usr/bin/env xcrun swift
+// vi: ft=swift
 
 import Foundation
 import CoreServices
+
+func suggestion(query : String) -> String? {
+    let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
+    let url = NSURL(string: "https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
+    let req = NSURLRequest(URL: url)
+
+    var res: NSURLResponse?
+    let data: NSData =  NSURLConnection.sendSynchronousRequest(req, returningResponse: &res, error:nil)!
+
+    var error: NSError?
+    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error: nil) as NSArray
+
+    if (json.count > 2 && json[1].count > 0) {
+      var hint = json[1][0][0] as String
+      hint = hint.stringByReplacingOccurrencesOfString("<b>", withString: "", options: NSStringCompareOptions.LiteralSearch)
+      hint = hint.stringByReplacingOccurrencesOfString("</b>", withString: "", options: NSStringCompareOptions.LiteralSearch)
+      return hint
+    } else {
+      return nil
+    }
+}
+
+func definition(textString : String) -> String? {
+  var range : CFRange = CFRangeMake(0, countElements(textString))
+  return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
+}
 
 func main() {
   let args = [String](Process.arguments)
@@ -18,11 +45,21 @@ func main() {
   }
 
   var word = " ".join(args[1...(args.count - 1)])
-  var range : CFRange = CFRangeMake(0, (word as NSString).length)
 
-  var result : String? = DCSCopyTextDefinition(nil, word, range)?.takeRetainedValue()
+  var result : String? = definition(word)
   if result == nil {
-    println("No entries found")
+    var hint : String? = suggestion(word)
+    if hint == nil {
+        println("No entries found")
+    } else {
+        result = definition(hint!)
+        if result == nil {
+            println("No entries found")
+        } else {
+            println("Did you mean: \(hint!)")
+            println(result!)
+        }
+    }
     return
   }
 
