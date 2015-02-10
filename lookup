@@ -6,8 +6,8 @@ import CoreServices
 
 func query_suggestion(query : String) -> String? {
     let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
-    let url = NSURL(string: "https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
-    let req = NSURLRequest(URL: url)
+    let url = NSURL(string:"https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
+    let req = NSURLRequest(URL:url)
 
     var error: NSError?
     var res: NSURLResponse?
@@ -24,9 +24,12 @@ func query_suggestion(query : String) -> String? {
     if (json.count > 2) {
       let idx = json.count - 1
       let dict = json[idx] as NSDictionary
-      var hint = dict["o"] as String
-      hint = hint.stringByReplacingOccurrencesOfString("<sc>", withString: "", options: NSStringCompareOptions.LiteralSearch)
-      hint = hint.stringByReplacingOccurrencesOfString("</sc>", withString: "", options: NSStringCompareOptions.LiteralSearch)
+      var hint = dict.objectForKey("o") as String?
+      if hint == nil {
+          return nil
+      }
+      hint = hint!.stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+      hint = hint!.stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
       return hint
     } else {
       return nil
