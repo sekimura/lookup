@@ -9,16 +9,24 @@ func query_suggestion(query : String) -> String? {
     let url = NSURL(string: "https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
     let req = NSURLRequest(URL: url)
 
-    var res: NSURLResponse?
-    let data: NSData =  NSURLConnection.sendSynchronousRequest(req, returningResponse: &res, error:nil)!
-
     var error: NSError?
-    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error: nil) as NSArray
+    var res: NSURLResponse?
+    let data: NSData =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error)!
+    if error != nil {
+      return nil
+    }
 
-    if (json.count > 2 && json[1].count > 0) {
-      var hint = json[1][0][0] as String
-      hint = hint.stringByReplacingOccurrencesOfString("<b>", withString: "", options: NSStringCompareOptions.LiteralSearch)
-      hint = hint.stringByReplacingOccurrencesOfString("</b>", withString: "", options: NSStringCompareOptions.LiteralSearch)
+    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
+    if error != nil {
+      return nil
+    }
+
+    if (json.count > 2) {
+      let idx = json.count - 1
+      let dict = json[idx] as NSDictionary
+      var hint = dict["o"] as String
+      hint = hint.stringByReplacingOccurrencesOfString("<sc>", withString: "", options: NSStringCompareOptions.LiteralSearch)
+      hint = hint.stringByReplacingOccurrencesOfString("</sc>", withString: "", options: NSStringCompareOptions.LiteralSearch)
       return hint
     } else {
       return nil
@@ -26,7 +34,7 @@ func query_suggestion(query : String) -> String? {
 }
 
 func get_definition(textString : String) -> String? {
-  var range : CFRange = CFRangeMake(0, countElements(textString))
+  let range : CFRange = CFRangeMake(0, countElements(textString))
   return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
 }
 
