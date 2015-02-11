@@ -1,13 +1,10 @@
 SDK = $$(xcrun --show-sdk-path --sdk macosx)
 
 build: lookup.swift
-	@mkdir -p build
-
-	@xcrun swiftc -o build/lookup lookup.swift
-
+	@xcrun swiftc -o lookup lookup.swift
 	@touch $@
 
 clean:
-	@rm -rf build
+	@rm -rf lookup
 
-.PHONY: clean
+.PHONY: clean build
