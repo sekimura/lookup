@@ -9,7 +9,7 @@ import AppKit
 func correct_spell(textString : String) -> String? {
     let checker = NSSpellChecker.sharedSpellChecker()
     let range = NSMakeRange(0, (textString as NSString).length)
-    let corrected : NSString? = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0);
+    let corrected = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0) as String?
     if corrected != nil {
       return corrected as String?
     }
@@ -68,9 +68,9 @@ func main() {
     return
   }
 
-  let word = " ".join(args[1...(args.count - 1)])
+  var word = " ".join(args[1...(args.count - 1)])
 
-  var result: String? = get_definition(word)
+  var result = get_definition(word)
   if result != nil {
     println(result!)
     return
@@ -78,19 +78,21 @@ func main() {
 
   let corrected = correct_spell(word)
   if corrected != nil {
-    result = get_definition(corrected!)
+    word = corrected!
+    result = get_definition(word)
     if result != nil {
-      println("Did you mean: \(corrected!)")
+      println("Did you mean: \(word)")
       println(result!)
       return
     }
   }
 
-  let suggestion: String? = query_suggestion(word)
+  let suggestion = query_suggestion(word)
   if suggestion != nil {
-    result = get_definition(suggestion!)
+    word = suggestion!
+    result = get_definition(word)
     if result != nil {
-      println("Did you mean: \(suggestion!)")
+      println("Did you mean: \(word)")
       println(result!)
       return
     }
