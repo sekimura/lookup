@@ -68,7 +68,7 @@ func main() {
     return
   }
 
-  var word = " ".join(args[1...(args.count - 1)])
+  let word = " ".join(args[1...(args.count - 1)])
 
   var result: String? = get_definition(word)
   if result != nil {
@@ -76,7 +76,7 @@ func main() {
     return
   }
 
-  var corrected = correct_spell(word)
+  let corrected = correct_spell(word)
   if corrected != nil {
     result = get_definition(corrected!)
     if result != nil {
@@ -86,7 +86,7 @@ func main() {
     }
   }
 
-  var suggestion: String? = query_suggestion(word)
+  let suggestion: String? = query_suggestion(word)
   if suggestion != nil {
     result = get_definition(suggestion!)
     if result != nil {
