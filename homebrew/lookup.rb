@@ -1,11 +1,11 @@
 require 'formula'
 
-LOOKUP_VERSION = "1.2.0"
+LOOKUP_VERSION = "1.3.0"
 
 class Lookup < Formula
   homepage "https://github.com/sekimura/lookup"
   url "https://github.com/sekimura/lookup/archive/v#{LOOKUP_VERSION}.zip"
-  sha1 "3f8c428f4bc3b18ce7165f2382da9a5c79aa4441"
+  sha1 "133d1d6960409b400e1bd4dc78e7587b184b7cbf"
   version LOOKUP_VERSION
 
   def install
