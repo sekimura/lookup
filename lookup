@@ -3,6 +3,19 @@
 
 import Foundation
 import CoreServices
+import AppKit
+
+
+func correct_spell(textString : String) -> String? {
+    let checker = NSSpellChecker.sharedSpellChecker()
+    let range = NSMakeRange(0, (textString as NSString).length)
+    let corrected : NSString? = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0);
+    if corrected != nil {
+      return corrected as String?
+    } else {
+      return nil
+    }
+}
 
 func query_suggestion(query : String) -> String? {
     let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
@@ -62,6 +75,16 @@ func main() {
   if result != nil {
     println(result!)
     return
+  }
+
+  var corrected = correct_spell(word)
+  if corrected != nil {
+    result = get_definition(corrected!)
+    if result != nil {
+      println("Did you mean: \(corrected!)")
+      println(result!)
+      return
+    }
   }
 
   var suggestion: String? = query_suggestion(word)
