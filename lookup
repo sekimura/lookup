@@ -11,12 +11,13 @@ func query_suggestion(query : String) -> String? {
 
     var error: NSError?
     var res: NSURLResponse?
-    let data: NSData =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error)!
+    let data: NSData? =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error)
+
     if error != nil {
       return nil
     }
 
-    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
+    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
     if error != nil {
       return nil
     }
