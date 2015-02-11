@@ -12,9 +12,8 @@ func correct_spell(textString : String) -> String? {
     let corrected : NSString? = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0);
     if corrected != nil {
       return corrected as String?
-    } else {
-      return nil
     }
+    return nil
 }
 
 func query_suggestion(query : String) -> String? {
@@ -88,18 +87,17 @@ func main() {
   }
 
   var suggestion: String? = query_suggestion(word)
-  if suggestion == nil {
-    println("No entries found")
-    return
-  }
-  result = get_definition(suggestion!)
-  if result == nil {
-    println("No entries found")
-    return
+  if suggestion != nil {
+    result = get_definition(suggestion!)
+    if result != nil {
+      println("Did you mean: \(suggestion!)")
+      println(result!)
+      return
+    }
   }
 
-  println("Did you mean: \(suggestion!)")
-  println(result!)
+  println("No entries found")
+
 }
 
 main()
