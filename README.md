@@ -6,10 +6,18 @@
 
 ## Install
 
+Method 1: Install from my tap repo
+
 ```
-$ brew install https://raw.github.com/sekimura/lookup/master/homebrew/lookup.rb
+$ brew install https://raw.github.com/sekimura/homebrew-tap/master/lookup.rb
 ```
 
+Method 2: Use [brew tap](https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/brew-tap.md)
+
+```
+$ brew tap sekimura/tap
+$ brew install sekimura/tap/lookup
+```
 
 ## License
 
