@@ -6,17 +6,14 @@ import CoreServices
 import AppKit
 
 
-func correct_spell(textString : String) -> String? {
+func correctSpell(textString : String) -> String? {
     let checker = NSSpellChecker.sharedSpellChecker()
     let range = NSMakeRange(0, (textString as NSString).length)
-    let corrected = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0) as String?
-    if corrected != nil {
-      return corrected as String?
-    }
-    return nil
+    let corrected = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0)
+    return corrected
 }
 
-func query_suggestion(query : String) -> String? {
+func querySuggestion(query : String) -> String? {
     let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
     let url = NSURL(string:"https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
     let req = NSURLRequest(URL:url)
@@ -29,7 +26,7 @@ func query_suggestion(query : String) -> String? {
       return nil
     }
 
-    let json: NSArray = NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
+    let json = NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
     if error != nil {
       return nil
     }
@@ -37,19 +34,16 @@ func query_suggestion(query : String) -> String? {
     if (json.count > 2) {
       let idx = json.count - 1
       let dict = json[idx] as NSDictionary
-      var hint: String? = dict.objectForKey("o") as String?
-      if hint == nil {
-          return nil
+      if let suggestion = dict.objectForKey("o") as String? {
+        return suggestion
+            .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+            .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
       }
-      hint = hint!.stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-      hint = hint!.stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-      return hint
-    } else {
-      return nil
     }
+    return nil
 }
 
-func get_definition(textString : String) -> String? {
+func getDefinition(textString : String) -> String? {
   let range : CFRange = CFRangeMake(0, countElements(textString))
   return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
 }
@@ -70,30 +64,23 @@ func main() {
 
   var word = " ".join(args[1...(args.count - 1)])
 
-  var result = get_definition(word)
-  if result != nil {
-    println(result!)
+  if let d = getDefinition(word) {
+    println(d)
     return
   }
 
-  let corrected = correct_spell(word)
-  if corrected != nil {
-    word = corrected!
-    result = get_definition(word)
-    if result != nil {
-      println("Did you mean: \(word)")
-      println(result!)
+  if let corrected = correctSpell(word) {
+    if let d = getDefinition(corrected) {
+      println("Did you mean: \(corrected)")
+      println(d)
       return
     }
   }
 
-  let suggestion = query_suggestion(word)
-  if suggestion != nil {
-    word = suggestion!
-    result = get_definition(word)
-    if result != nil {
-      println("Did you mean: \(word)")
-      println(result!)
+  if let suggestion = querySuggestion(word) {
+    if let d = getDefinition(suggestion) {
+      println("Did you mean: \(suggestion)")
+      println(d)
       return
     }
   }
