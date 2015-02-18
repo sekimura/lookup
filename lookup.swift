@@ -23,70 +23,69 @@ func querySuggestion(query : String) -> String? {
     let data: NSData? =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error)
 
     if error != nil {
-      return nil
+        return nil
     }
 
     let json = NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
     if error != nil {
-      return nil
+        return nil
     }
 
     if (json.count > 2) {
-      let idx = json.count - 1
-      let dict = json[idx] as NSDictionary
-      if let suggestion = dict.objectForKey("o") as String? {
-        return suggestion
-            .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-            .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-      }
+        let idx = json.count - 1
+        let dict = json[idx] as NSDictionary
+        if let suggestion = dict.objectForKey("o") as String? {
+            return suggestion
+                .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+                .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+        }
     }
     return nil
 }
 
 func getDefinition(textString : String) -> String? {
-  let range : CFRange = CFRangeMake(0, countElements(textString))
-  return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
+    let range : CFRange = CFRangeMake(0, countElements(textString))
+    return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
 }
 
 func main() {
-  let args = [String](Process.arguments)
+    let args = [String](Process.arguments)
 
-  if args.count < 2 {
-    println("\n".join([
-      "",
-      "Usage:",
-      "    \(args[0]) lackadaisical",
-      "    \(args[0]) lazy susan",
-      "",
-      ]))
-    return
-  }
-
-  var word = " ".join(args[1...(args.count - 1)])
-
-  if let d = getDefinition(word) {
-    println(d)
-    return
-  }
-
-  if let corrected = correctSpell(word) {
-    if let d = getDefinition(corrected) {
-      println("Did you mean: \(corrected)")
-      println(d)
-      return
+    if args.count < 2 {
+        println("\n".join([
+            "",
+            "Usage:",
+            "    \(args[0]) lackadaisical",
+            "    \(args[0]) lazy susan",
+            "",
+        ]))
+        return
     }
-  }
 
-  if let suggestion = querySuggestion(word) {
-    if let d = getDefinition(suggestion) {
-      println("Did you mean: \(suggestion)")
-      println(d)
-      return
+    var word = " ".join(args[1...(args.count - 1)])
+
+    if let d = getDefinition(word) {
+        println(d)
+        return
     }
-  }
 
-  println("No entries found")
+    if let corrected = correctSpell(word) {
+        if let d = getDefinition(corrected) {
+            println("Did you mean: \(corrected)")
+            println(d)
+            return
+        }
+    }
 
+    if let suggestion = querySuggestion(word) {
+        if let d = getDefinition(suggestion) {
+            println("Did you mean: \(suggestion)")
+            println(d)
+            return
+        }
+    }
+
+    println("No entries found")
 }
 
 main()
