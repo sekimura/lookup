@@ -20,24 +20,26 @@ func querySuggestion(query : String) -> String? {
 
     var error: NSError?
     var res: NSURLResponse?
-    let data: NSData? =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error)
+    if let data =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error) {
+        if error != nil {
+            return nil
+        }
 
-    if error != nil {
-        return nil
-    }
+        if let json = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error:&error) as? NSArray {
+            if error != nil {
+                return nil
+            }
 
-    let json = NSJSONSerialization.JSONObjectWithData(data!, options:NSJSONReadingOptions.AllowFragments, error:&error) as NSArray
-    if error != nil {
-        return nil
-    }
-
-    if (json.count > 2) {
-        let idx = json.count - 1
-        let dict = json[idx] as NSDictionary
-        if let suggestion = dict.objectForKey("o") as String? {
-            return suggestion
-                .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-                .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+            if (json.count > 2) {
+                let idx = json.count - 1
+                if let dict = json[idx] as? NSDictionary {
+                    if let suggestion = dict.objectForKey("o") as? String {
+                        return suggestion
+                            .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+                            .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+                    }
+                }
+            }
         }
     }
     return nil
