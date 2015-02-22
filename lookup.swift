@@ -46,8 +46,11 @@ func querySuggestion(query : String) -> String? {
 }
 
 func getDefinition(textString : String) -> String? {
-    let range : CFRange = CFRangeMake(0, countElements(textString))
-    return DCSCopyTextDefinition(nil, textString, range)?.takeRetainedValue()
+    let range : CFRange = CFRangeMake(0, textString.utf16Count)
+    if let definition = DCSCopyTextDefinition(nil, textString, range) {
+        return definition.takeUnretainedValue() as String
+    }
+    return nil
 }
 
 func main() {
