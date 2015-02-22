@@ -64,21 +64,21 @@ func main() {
             "    \(args[0]) lazy susan",
             "",
         ]))
-        return
+        exit(0)
     }
 
     var word = " ".join(args[1...(args.count - 1)])
 
     if let d = getDefinition(word) {
         println(d)
-        return
+        exit(0)
     }
 
     if let corrected = correctSpell(word) {
         if let d = getDefinition(corrected) {
             println("Did you mean: \(corrected)")
             println(d)
-            return
+            exit(0)
         }
     }
 
@@ -86,11 +86,12 @@ func main() {
         if let d = getDefinition(suggestion) {
             println("Did you mean: \(suggestion)")
             println(d)
-            return
+            exit(0)
         }
     }
 
     println("No entries found")
+    exit(1)
 }
 
 main()
