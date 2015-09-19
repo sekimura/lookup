@@ -14,39 +14,39 @@ func correctSpell(textString : String) -> String? {
 }
 
 func querySuggestion(query : String) -> String? {
-    let escaped = query.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
+    let escaped = query.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
     let url = NSURL(string:"https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
-    let req = NSURLRequest(URL:url)
+    let request = NSURLRequest(URL:url)
 
-    var error: NSError?
-    var res: NSURLResponse?
-    if let data =  NSURLConnection.sendSynchronousRequest(req, returningResponse:&res, error:&error) {
-        if error != nil {
-            return nil
-        }
+    let semaphore = dispatch_semaphore_create(0)
+    let session = NSURLSession.sharedSession()
+    var suggestion: String?
+    let task = session.dataTaskWithRequest(request) {
+        (data, response, error) -> Void in
 
-        if let json = NSJSONSerialization.JSONObjectWithData(data, options:NSJSONReadingOptions.AllowFragments, error:&error) as? NSArray {
-            if error != nil {
-                return nil
-            }
+        defer { dispatch_semaphore_signal(semaphore) }
 
+        do {
+            let json = try NSJSONSerialization.JSONObjectWithData(data!,
+                options: NSJSONReadingOptions.MutableContainers) as! NSArray
             if (json.count > 2) {
                 let idx = json.count - 1
-                if let dict = json[idx] as? NSDictionary {
-                    if let suggestion = dict.objectForKey("o") as? String {
-                        return suggestion
-                            .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-                            .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-                    }
-                }
+                guard let dict = json[idx] as? NSDictionary else { return }
+                guard let suggestionObject = dict.objectForKey("o") as? String else { return }
+                suggestion = suggestionObject
+                    .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
+                    .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
             }
-        }
+        } catch {}
     }
-    return nil
+    task.resume()
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
+
+    return suggestion
 }
 
 func getDefinition(textString : String) -> String? {
-    let range : CFRange = CFRangeMake(0, count(textString.utf16))
+    let range : CFRange = CFRangeMake(0, textString.utf16.count)
     if let definition = DCSCopyTextDefinition(nil, textString, range) {
         return definition.takeUnretainedValue() as String
     }
@@ -57,40 +57,41 @@ func main() {
     let args = [String](Process.arguments)
 
     if args.count < 2 {
-        println("\n".join([
+        print([
             "",
             "Usage:",
             "    \(args[0]) lackadaisical",
             "    \(args[0]) lazy susan",
             "",
-        ]))
+        ].joinWithSeparator("\n"))
         exit(0)
     }
 
-    var word = " ".join(args[1...(args.count - 1)])
+    let word = args[1...(args.count - 1)].joinWithSeparator(" ")
 
     if let d = getDefinition(word) {
-        println(d)
+        print(d)
         exit(0)
     }
 
     if let corrected = correctSpell(word) {
         if let d = getDefinition(corrected) {
-            println("Did you mean: \(corrected)")
-            println(d)
+            print("Did you mean: \(corrected) (by NSSpellChecker)")
+            print(d)
             exit(0)
         }
     }
 
     if let suggestion = querySuggestion(word) {
         if let d = getDefinition(suggestion) {
-            println("Did you mean: \(suggestion)")
-            println(d)
+            print("Did you mean: \(suggestion) (by Google Suggestion)")
+            print(d)
             exit(0)
         }
     }
 
-    println("No entries found")
+
+    print("No entries found")
     exit(1)
 }
 
