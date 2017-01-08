@@ -38,7 +38,7 @@ func querySuggestion(_ query: String) -> String? {
             }
         }.resume()
     }
-    sema.wait()
+    _ = sema.wait(timeout: DispatchTime.now() + .seconds(1))
     return suggestion
 }
 
