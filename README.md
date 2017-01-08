@@ -16,14 +16,14 @@ To build binary, run make to build lookup binary
 
 ```
 $ make
-$ ./lookup
+$ ./lookup lackadaisical
 ```
 
 You can also use lookup.swift as a script file
 
 ```
 $ chmod 755 ./lookup.swift
-$ ./lookup.swift
+$ ./lookup.swift lazy susan
 ```
 
 Enjoy!
