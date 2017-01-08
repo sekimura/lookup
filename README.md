@@ -9,7 +9,7 @@
 First, clone this repo
 ```
 $ git clone https://github.com/sekimura/lookup.git
-$ cd wipasswod
+$ cd lookup
 ```
 
 To build binary, run make to build lookup binary
