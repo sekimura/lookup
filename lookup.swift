@@ -5,56 +5,53 @@ import Foundation
 import CoreServices
 import AppKit
 
-
-func correctSpell(textString : String) -> String? {
-    let checker = NSSpellChecker.sharedSpellChecker()
-    let range = NSMakeRange(0, (textString as NSString).length)
-    let corrected = checker.correctionForWordRange(range, inString:textString, language:"en", inSpellDocumentWithTag:0)
-    return corrected
+func correctSpell(_ text: String) -> String? {
+    let checker = NSSpellChecker.shared()
+    let range = NSRange(location: 0, length: text.characters.count)
+    return checker.correction(forWordRange:range, in:text, language:"en", inSpellDocumentWithTag:0)
 }
 
-func querySuggestion(query : String) -> String? {
-    let escaped = query.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
-    let url = NSURL(string:"https://www.google.com/s?sclient=psy-ab&q=\(escaped)")!
-    let request = NSURLRequest(URL:url)
-
-    let semaphore = dispatch_semaphore_create(0)
-    let session = NSURLSession.sharedSession()
-    var suggestion: String?
-    let task = session.dataTaskWithRequest(request) {
-        (data, response, error) -> Void in
-
-        defer { dispatch_semaphore_signal(semaphore) }
-
-        do {
-            let json = try NSJSONSerialization.JSONObjectWithData(data!,
-                options: NSJSONReadingOptions.MutableContainers) as! NSArray
-            if (json.count > 2) {
-                let idx = json.count - 1
-                guard let dict = json[idx] as? NSDictionary else { return }
-                guard let suggestionObject = dict.objectForKey("o") as? String else { return }
-                suggestion = suggestionObject
-                    .stringByReplacingOccurrencesOfString("<sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-                    .stringByReplacingOccurrencesOfString("</sc>", withString:"", options:NSStringCompareOptions.LiteralSearch)
-            }
-        } catch {}
+func querySuggestion(_ query: String) -> String? {
+    guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        return nil
     }
-    task.resume()
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER)
+    let sess = URLSession(configuration: .default)
+    let sema = DispatchSemaphore(value: 0)
+    var suggestion: String?
+    if let url = URL(string: "https://www.google.com/s?sclient=psy-ab&q=\(encoded)") {
+        sess.dataTask(with: url) { (data, _, _) in
+            defer { sema.signal() }
+            do {
+                guard let data = data else { return }
 
+                let json = try? JSONSerialization.jsonObject(with: data, options: [])
+
+                guard let array = json as? [Any], array.count > 2  else { return }
+                guard let dict = array[array.endIndex - 1] as? [String: Any] else { return }
+                guard var value = dict["o"] as? String else { return }
+
+                // remove <s> prefix and </s> suffix
+                value.removeSubrange(value.startIndex...value.index(value.startIndex, offsetBy: 3))
+                value.removeSubrange(value.index(value.endIndex, offsetBy:-5)..<value.endIndex)
+
+                suggestion = value
+            }
+        }.resume()
+    }
+    sema.wait()
     return suggestion
 }
 
-func getDefinition(textString : String) -> String? {
-    let range : CFRange = CFRangeMake(0, textString.utf16.count)
-    if let definition = DCSCopyTextDefinition(nil, textString, range) {
-        return definition.takeUnretainedValue() as String
+func getDefinition(_ text: String) -> String? {
+    let range = CFRangeMake(0, (text as NSString).length)
+    guard let definition = DCSCopyTextDefinition(nil, text as CFString, range) else {
+        return nil
     }
-    return nil
+    return definition.takeUnretainedValue() as String
 }
 
-func main() {
-    let args = [String](Process.arguments)
+func main() -> Int32 {
+    let args = CommandLine.arguments
 
     if args.count < 2 {
         print([
@@ -62,23 +59,23 @@ func main() {
             "Usage:",
             "    \(args[0]) lackadaisical",
             "    \(args[0]) lazy susan",
-            "",
-        ].joinWithSeparator("\n"))
-        exit(0)
+            ""
+        ].joined(separator: "\n"))
+        return 0
     }
 
-    let word = args[1...(args.count - 1)].joinWithSeparator(" ")
+    let word = args[1...(args.count - 1)].joined(separator: " ")
 
     if let d = getDefinition(word) {
         print(d)
-        exit(0)
+        return 0
     }
 
     if let corrected = correctSpell(word) {
         if let d = getDefinition(corrected) {
             print("Did you mean: \(corrected) (by NSSpellChecker)")
             print(d)
-            exit(0)
+            return 0
         }
     }
 
@@ -86,13 +83,12 @@ func main() {
         if let d = getDefinition(suggestion) {
             print("Did you mean: \(suggestion) (by Google Suggestion)")
             print(d)
-            exit(0)
+            return 0
         }
     }
 
-
     print("No entries found")
-    exit(1)
+    return 1
 }
 
-main()
+exit(main())
