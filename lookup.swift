@@ -71,20 +71,16 @@ func main() -> Int32 {
         return 0
     }
 
-    if let corrected = correctSpell(word) {
-        if let d = getDefinition(corrected) {
-            print("Did you mean: \(corrected) (by NSSpellChecker)")
-            print(d)
-            return 0
-        }
+    if let corrected = correctSpell(word), let d = getDefinition(corrected) {
+        print("Did you mean: \(corrected) (by NSSpellChecker)")
+        print(d)
+        return 0
     }
 
-    if let suggestion = querySuggestion(word) {
-        if let d = getDefinition(suggestion) {
-            print("Did you mean: \(suggestion) (by Google Suggestion)")
-            print(d)
-            return 0
-        }
+    if let suggestion = querySuggestion(word), let d = getDefinition(suggestion) {
+        print("Did you mean: \(suggestion) (by Google Suggestion)")
+        print(d)
+        return 0
     }
 
     print("No entries found")
