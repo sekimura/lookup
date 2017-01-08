@@ -26,8 +26,8 @@ func querySuggestion(_ query: String) -> String? {
 
                 let json = try? JSONSerialization.jsonObject(with: data, options: [])
 
-                guard let array = json as? [Any], array.count > 2  else { return }
-                guard let dict = array[array.endIndex - 1] as? [String: Any] else { return }
+                guard let array = json as? [Any] else { return }
+                guard let dict = array[array.index(before: array.endIndex)] as? [String: Any] else { return }
                 guard var value = dict["o"] as? String else { return }
 
                 // remove <s> prefix and </s> suffix
