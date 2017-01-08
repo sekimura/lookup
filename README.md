@@ -6,20 +6,29 @@
 
 ## Install
 
-Method 1: Install from my tap repo
+First, clone this repo
+```
+$ git clone https://github.com/sekimura/lookup.git
+$ cd wipasswod
+```
+
+To build binary, run make to build lookup binary
 
 ```
-$ brew install https://raw.github.com/sekimura/homebrew-tap/master/lookup.rb
+$ make
+$ ./lookup
 ```
 
-Method 2: Use [brew tap](https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/brew-tap.md)
+You can also use lookup.swift as a script file
 
 ```
-$ brew tap sekimura/tap
-$ brew install sekimura/tap/lookup
+$ chmod 755 ./lookup.swift
+$ ./lookup.swift
 ```
+
+Enjoy!
 
 ## License
 
-MIT © [Masayoshi Sekimura](http://sekimura.org)
+MIT © [Masayoshi Sekimura](https://www.sekimura.org)
 
