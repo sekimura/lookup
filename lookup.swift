@@ -6,8 +6,8 @@ import CoreServices
 import AppKit
 
 func correctSpell(_ text: String) -> String? {
-    let checker = NSSpellChecker.shared()
-    let range = NSRange(location: 0, length: text.characters.count)
+    let checker = NSSpellChecker.shared
+    let range = NSRange(location: 0, length: text.count)
     return checker.correction(forWordRange:range, in:text, language:"en", inSpellDocumentWithTag:0)
 }
 
